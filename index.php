@@ -1,20 +1,21 @@
 <?php
 $output = "";
 $input = "";
-
-if (isset($_POST['run']))
-{
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = $_POST["run"];
-    $output = eval($input);
+
+    preg_match("/<\?php(.*?)\?>/s", $input, $code);
+
+    $output = eval($code[1]);
+
     $fileName = __DIR__ . '\\' . uniqid() . '.php';
     $fileHandle = fopen($fileName, 'w+');
     fwrite($fileHandle, $input);
     $fileName = realpath($fileName);
     $output = shell_exec('php -l "' . $fileName . '"');
-//    $syntaxError = preg_replace("/Errors parsing.*$/", "", $output, -1, $count);
+    $syntaxError = preg_replace("/Errors parsing.*$/", "", $output, -1, $count);
     fclose($fileHandle);
 }
-
 ?>
 <!doctype html>
 <html lang="en">
@@ -26,9 +27,9 @@ if (isset($_POST['run']))
     <title>Welcome</title>
 </head>
 <body>
-<form action="" method="post">
+<form method="post">
     <textarea name="run" id="" cols="30" rows="10"></textarea>
-    <button>Run Code</button>
+    <button type="submit">Run Code</button>
 </form>
 <div>
     <h3>Input</h3>
